@@ -2,7 +2,7 @@
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
 			   creationComplete="init()"
-			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600">
+			   xmlns:mx="library://ns.adobe.com/flex/mx">
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
@@ -10,20 +10,28 @@
 		<![CDATA[			
 			import scripts.OrbitalSimulator;
 			
+			[Bindable]
+			public var sim:OrbitalSimulator;
 			public function init():void 
 			{
 				trace("Works");
-				var sim:OrbitalSimulator = new OrbitalSimulator(canvas);
+				sim = new OrbitalSimulator(mainStage);
 				sim.start();
 			}
 		]]>
 	</fx:Script>
 	<s:layout>
-		<s:VerticalLayout>
+		<s:HorizontalLayout>
 			
-		</s:VerticalLayout>
-	</s:layout>
-	<s:Group width="80%" height="80%" id="canvas">
+		</s:HorizontalLayout>
+		</s:layout>
+	<s:Group width="100%" height="100%" id="mainStage">
+		<s:VGroup x="258" y="19" width="200" height="334">
+			<s:DropDownList dataProvider="{sim.objects}" labelField="color"></s:DropDownList>
+			<s:Label text="{sim.currentObject().position}"/>
+			<s:Label text="{sim.currentObject().velocity}"/>
+			<s:Label text="{sim.currentObject().acceleration}"/>
+		</s:VGroup>
 		
 	</s:Group>
 </s:Application>

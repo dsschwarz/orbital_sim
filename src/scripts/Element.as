@@ -1,5 +1,6 @@
 package scripts
 {
+	import mx.events.PropertyChangeEvent;
 	import mx.graphics.SolidColor;
 	
 	import spark.components.Group;
@@ -7,23 +8,27 @@ package scripts
 
 	public class Element
 	{
+		[Bindable]
 		public var position:MyVector;
+		[Bindable]
 		public var velocity:MyVector;
+		[Bindable]
 		public var acceleration:MyVector;
+		[Bindable]
 		public var mass:Number = 10;
 		public var radius:Number = 20;
 		public var image:Ellipse;
 		public function Element(canvas:Group, color:uint)
 		{
-			this.position = new MyVector(OrbitalSimulator.numDim);
-			this.velocity = new MyVector(OrbitalSimulator.numDim);
-			this.acceleration = new MyVector(OrbitalSimulator.numDim);
+			position = new MyVector(OrbitalSimulator.numDim);
+			velocity = new MyVector(OrbitalSimulator.numDim);
+			acceleration = new MyVector(OrbitalSimulator.numDim);
 			for (var i:int = 0; i < OrbitalSimulator.numDim; i++) {
-				this.position[i] = 0;
-				this.velocity[i] = 0;
-				this.acceleration[i] = 0;
+				position[i] = 0;
+				velocity[i] = 0;
+				acceleration[i] = 0;
 			}
-			this.image = new Ellipse();
+			image = new Ellipse();
 			image.width = radius;
 			image.height = radius;
 			image.fill = new SolidColor(color);
@@ -35,8 +40,8 @@ package scripts
 		public function update(ms:Number):void {
 			image.x = position[0];
 			image.y = position[1];
-			velocity.addIp(acceleration.mult(ms/1000));
-			position.addIp(velocity.mult(ms/1000));
+			velocity.add(acceleration.mult(ms/1000), true);
+			position.add(velocity.mult(ms/1000), true);
 		}
 	}
 }
