@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   creationComplete="init()"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[			
+			import scripts.OrbitalSimulator;
+			
+			public function init():void 
+			{
+				trace("Works");
+				var sim:OrbitalSimulator = new OrbitalSimulator(canvas);
+				sim.start();
+			}
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:VerticalLayout>
+			
+		</s:VerticalLayout>
+	</s:layout>
+	<s:Group width="80%" height="80%" id="canvas">
+		
+	</s:Group>
+</s:Application>
