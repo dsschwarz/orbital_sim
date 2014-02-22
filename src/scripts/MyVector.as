@@ -1,17 +1,32 @@
 package scripts
 {	
-	public dynamic class MyVector extends Array
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.utils.Proxy;
+	import flash.utils.flash_proxy;
+
+	public dynamic class MyVector extends Proxy
 	{
-	
-		public function MyVector(numElements:int)
+		private var eventDispatcher:EventDispatcher;
+		private var _array:Array;
+		public var name:String;
+		public function MyVector(numElements:int=0, defVal:*=null)
 		{
-			super(numElements);
+			eventDispatcher = new EventDispatcher();
+			_array = new Array(numElements);
+			for (var i:int = 0; i < numElements; i++) {
+				_array[i] = defVal;
+			}
 		}
 		private function eachEl(op:String, b:*, inPlace:Boolean=false):MyVector {
 			var returnArray:MyVector = new MyVector(this.length);
 			for(var i:int = 0; i < this.length; i++) {
 				var el:*;
 				if (b is Array || b is MyVector) {
+					// Prevent out of index errors
+					if (i >= b.length) {
+						return returnArray;
+					}
 					el = b[i];
 				} else {
 					el = b;
@@ -94,13 +109,16 @@ package scripts
 		
 		public function toString():String
 		{
+			return roundTo(6);
+		}
+		public function roundTo(digits:Number):String {
 			var string:String = "";
 			this.forEach(function(el:*, index:int, array:*):void {
 				if (index != 0) {
 					string += ", ";
 				}
 				if (el is Number && el != 0) {
-					var factor:Number = Math.pow(10.0, 6 - Math.ceil(Math.log(Math.abs(el)) / Math.log(10)));
+					var factor:Number = Math.pow(10.0, digits - Math.ceil(Math.log(Math.abs(el)) / Math.log(10)));
 					var roundedVal:Number = Math.round(el * factor) / factor; 
 					string += roundedVal;
 				} else {
@@ -108,6 +126,21 @@ package scripts
 				}
 			});	
 			return string;
+		}
+		
+		override flash_proxy function setProperty(name:*, value:*):void {
+			eventDispatcher.dispatchEvent(new Event("vectorChanged"));
+			_array[name] = value;
+		}
+		override flash_proxy function getProperty(name:*):* {
+			return _array[name];
+		}
+		override flash_proxy function callProperty(name:*, ...rest):* {
+			return _array[name].apply(this, rest);
+		}
+		public function listen(...args):void
+		{
+			eventDispatcher.addEventListener.apply(this, args);
 		}
 	}
 }

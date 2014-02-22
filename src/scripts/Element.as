@@ -2,9 +2,11 @@ package scripts
 {
 	import mx.events.PropertyChangeEvent;
 	import mx.graphics.SolidColor;
+	import mx.graphics.SolidColorStroke;
 	
 	import spark.components.Group;
 	import spark.primitives.Ellipse;
+	import spark.primitives.Line;
 
 	public dynamic class Element
 	{
@@ -12,32 +14,60 @@ package scripts
 		public var velocity:MyVector;
 		public var acceleration:MyVector;
 		public var mass:Number = 10;
-		public var radius:Number = 20;
+		public var radius:Number = 5;
 		public var image:Ellipse;
-		public function Element(canvas:Group, color:uint)
+		public var velLine:Line;
+		public var acclLine:Line;
+		public var parent:OrbitalSimulator;
+		public var id:int;
+		private static var idCounter:int = 1;
+		public function Element(sim:OrbitalSimulator, color:uint) // Tightly  coupled to sim
 		{
-			position = new MyVector(OrbitalSimulator.numDim);
-			velocity = new MyVector(OrbitalSimulator.numDim);
-			acceleration = new MyVector(OrbitalSimulator.numDim);
-			for (var i:int = 0; i < OrbitalSimulator.numDim; i++) {
-				position[i] = 0;
-				velocity[i] = 0;
-				acceleration[i] = 0;
-			}
+			id = idCounter++;
+			parent = sim;
+			position = new MyVector(sim.numDim, 0);
+			velocity = new MyVector(sim.numDim, 0);
+			acceleration = new MyVector(sim.numDim, 0);
+			
 			image = new Ellipse();
-			image.width = radius;
-			image.height = radius;
+			image.width = radius*2;
+			image.height = radius*2;
 			image.fill = new SolidColor(color);
-			image.x = position[0];
-			image.y = position[1];
-			canvas.addElement(image);
+			image.x = position[0] - radius;
+			image.y = position[1] - radius;
+			sim.canvas.addElement(image);
+			
+			//Direction vectors
+			velLine = new Line();		
+			velLine.stroke = new SolidColorStroke(0xa01010);
+			sim.canvas.addElement(velLine);	
+			
+			acclLine = new Line();
+			acclLine.stroke = new SolidColorStroke(0x20a020);
+			sim.canvas.addElement(acclLine);
 		}
 		
 		public function update(ms:Number):void {
-			image.x = position[0];
-			image.y = position[1];
+			var toVector:MyVector;
+			
+			image.x = position[0] - radius;
+			image.y = position[1] - radius;
 			velocity.add(acceleration.mult(ms/1000), true);
 			position.add(velocity.mult(ms/1000), true);
+			
+			// Direction Vectors
+			velLine.xFrom = position[0];
+			velLine.yFrom = position[1];
+			toVector = position.add(velocity.mult(2));
+			velLine.xTo = toVector[0];
+			velLine.yTo = toVector[1];
+			
+			acclLine.xFrom = position[0];
+			acclLine.yFrom = position[1];
+			toVector = position.add(acceleration.mult(2));
+			acclLine.xTo = toVector[0];
+			acclLine.yTo = toVector[1];
+			
 		}
 	}
 }
