@@ -3,11 +3,13 @@ package scripts
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
+	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 	
 	import mx.binding.utils.BindingUtils;
 	import mx.binding.utils.ChangeWatcher;
+	import mx.collections.ArrayCollection;
 	import mx.collections.ArrayList;
 	import mx.events.PropertyChangeEvent;
 	
@@ -31,11 +33,14 @@ package scripts
 		public var objects:ArrayList = new ArrayList();
 		public var canvas:Group;
 		public var currentElement:Element;
+		[Bindable]
+		public var outputObject:OutputObject;
 				
 		private var eventDispatcher:EventDispatcher;
+		private var mouseDownEvent:MouseEvent;
 		private var timer:Timer;
 		private var timeElapsed:Number = 0;
-		private var _reverseTime:Boolean = false;
+		private var _reverseTime:int = 1;
 		
 		public function OrbitalSimulator(mainStage:Group)
 		{
@@ -69,7 +74,7 @@ package scripts
 			}
 			
 			// Set to sim speed (WARNING - take care with this)
-			var scaled_ms:Number = ms * simulationSpeed;
+			var scaled_ms:Number = ms * simulationSpeed * _reverseTime;
 			var i:int, j:int, axis:int;
 			// Reset acceleration
 			for (i = 0; i < objects.length; i ++)
@@ -139,7 +144,54 @@ package scripts
 		{
 			eventDispatcher.addEventListener.apply(this, args);
 		}
-		
+		public function setOutputObject(obj:OutputObject):void
+		{
+			obj.elementVectors = new ArrayCollection();
+			obj.elementVectors.addItem(new MyVector(numDim));
+			obj.elementVectors.addItem(new MyVector(numDim));
+			obj.elementVectors.addItem(new MyVector(numDim));
+			function setElementVectors(event:Event):void
+			{
+				var i:int;
+				var pos:MyVector = new MyVector(numDim, 0);
+				var vel:MyVector = new MyVector(numDim, 0);
+				var acclr:MyVector = new MyVector(numDim, 0);
+				pos.name = "Position";
+				vel.name = "Velocity";
+				acclr.name = "Acceleration";
+				for(i = 0; i < numDim; i++) {
+					pos[i] = MyUtils.roundTo(currentElement.position[i], 3);
+					vel[i] = MyUtils.roundTo(currentElement.velocity[i], 3);
+					acclr[i] = MyUtils.roundTo(currentElement.acceleration[i], 3);
+				}
+				obj.elementVectors.setItemAt(pos, 0);
+				obj.elementVectors.setItemAt(vel, 1);
+				obj.elementVectors.setItemAt(acclr, 2);
+			};
+			listen("periodicUpdate", setElementVectors);
+			setElementVectors(new Event("dummyVal"))
+			
+			canvas.addEventListener(MouseEvent.MOUSE_WHEEL, function(event:MouseEvent):void {
+				var scrollFactor:Number = event.delta > 0 ? 1.25 : 0.8;
+				zoom *= scrollFactor;
+			});
+			
+			canvas.addEventListener(MouseEvent.MOUSE_DOWN, function(event:MouseEvent):void {
+				mouseDownEvent = event;
+			});
+			canvas.addEventListener(MouseEvent.MOUSE_MOVE, function(event:MouseEvent):void {
+				if (mouseDownEvent) {
+					pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
+					mouseDownEvent = event;
+				}
+			});
+			canvas.parent.addEventListener(MouseEvent.MOUSE_UP, function(event:MouseEvent):void {
+				if (mouseDownEvent) {
+					pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
+					mouseDownEvent = null;
+				}
+			});
+		}
 		public function start():void
 		{
 			timer.start();
@@ -161,7 +213,7 @@ package scripts
 		}
 		public function reverseTime():void
 		{
-			_reverseTime = true;
+			_reverseTime *= -1;
 		}
 		
 		// Will implement as soon as I solve the three-body problem
