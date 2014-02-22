@@ -1,25 +1,11 @@
 package scripts
-{
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import flash.events.IEventDispatcher;
-	import flash.utils.Proxy;
-	import flash.utils.flash_proxy;
-	
-	import mx.collections.ArrayCollection;
-	import mx.events.PropertyChangeEvent;
-	import mx.events.PropertyChangeEventKind;
-	
-	[Bindable("propertyChange")]
-	public dynamic class MyVector extends Proxy implements IEventDispatcher
+{	
+	public dynamic class MyVector extends Array
 	{
-		private var _array:Array;
-		private var eventDispatcher:EventDispatcher;
 	
 		public function MyVector(numElements:int)
 		{
-			_array = new Array(numElements);
-			eventDispatcher = new EventDispatcher(this);
+			super(numElements);
 		}
 		private function eachEl(op:String, b:*, inPlace:Boolean=false):MyVector {
 			var returnArray:MyVector = new MyVector(this.length);
@@ -27,8 +13,6 @@ package scripts
 				var el:*;
 				if (b is Array || b is MyVector) {
 					el = b[i];
-				} else if (b is ArrayCollection){
-					el = b.getItemAt();
 				} else {
 					el = b;
 				}
@@ -124,48 +108,6 @@ package scripts
 				}
 			});	
 			return string;
-		}
-		
-		// Proxy Overrides
-		override flash_proxy function setProperty(name:*, value:*):void {
-			var oldValue:* = _array[name];
-			_array[name] = value;
-			var kind:String = PropertyChangeEventKind.UPDATE;
-			dispatchEvent(new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, false, false, kind, name, oldValue, value, this));
-		}
-		
-		override flash_proxy function getProperty(name:*):* {
-			return _array[name];
-		}
-		
-		override flash_proxy function callProperty(name:*, ...rest):* {			
-			return _array[name].apply(_array, rest);
-		}
-		
-		// Event Dispatcher functions
-		public function hasEventListener(type:String):Boolean
-		{
-			return eventDispatcher.hasEventListener(type);
-		}
-		
-		public function willTrigger(type:String):Boolean
-		{
-			return eventDispatcher.willTrigger(type);
-		}
-		
-		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0.0, useWeakReference:Boolean=false):void
-		{
-			eventDispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
-		}
-		
-		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
-		{
-			eventDispatcher.removeEventListener(type, listener, useCapture);
-		}
-		
-		public function dispatchEvent(event:Event):Boolean
-		{
-			return eventDispatcher.dispatchEvent(event);
 		}
 	}
 }

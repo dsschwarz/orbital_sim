@@ -6,15 +6,11 @@ package scripts
 	import spark.components.Group;
 	import spark.primitives.Ellipse;
 
-	public class Element
+	public dynamic class Element
 	{
-		[Bindable]
 		public var position:MyVector;
-		[Bindable]
 		public var velocity:MyVector;
-		[Bindable]
 		public var acceleration:MyVector;
-		[Bindable]
 		public var mass:Number = 10;
 		public var radius:Number = 20;
 		public var image:Ellipse;

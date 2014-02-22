@@ -29,8 +29,8 @@
 		<s:VGroup x="258" y="19" width="200" height="334">
 			<s:DropDownList dataProvider="{sim.objects}" labelField="color"></s:DropDownList>
 			<s:Label text="{sim.currentObject().position}"/>
-			<s:Label text="{sim.currentObject().velocity}"/>
-			<s:Label text="{sim.currentObject().acceleration}"/>
+			<s:Label text="{sim.currentObject().velocity.toString()}"/>
+			<s:Label text="{sim.currentObject().acceleration.toString()}"/>
 		</s:VGroup>
 		
 	</s:Group>

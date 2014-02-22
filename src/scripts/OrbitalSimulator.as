@@ -10,6 +10,7 @@ package scripts
 	
 	import spark.components.Group;
 	import spark.components.Label;
+	import spark.components.TextInput;
 	import spark.components.VGroup;
 	
 	public class OrbitalSimulator
@@ -19,7 +20,9 @@ package scripts
 		public var objects:ArrayList = new ArrayList();
 		public static var numDim:int = 4;
 		public var canvas:Group;
-		private var currentObjIndex = 0;
+		private var currentObjIndex:int = 0;
+		[Bindable("propertyChange")]
+		public var myV:MyVector;
 		public function OrbitalSimulator(mainStage:Group)
 		{
 			canvas = new Group();
@@ -33,13 +36,7 @@ package scripts
 			objects.addItem(p1);
 			objects.addItem(p2);
 			
-			var lab:Label = new Label();
-			lab.text = "Label";
-			currentObject().position.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, function(obj:Object) {
-				lab.text = p1.position.toString();
-			});
 			p1.position.add([100, 20, 0, 0], true);
-			canvas.addElement(lab);
 			mainStage.addElement(canvas);
 		}
 		public function update(ms:Number):void 
@@ -81,7 +78,6 @@ package scripts
 				objects.getItemAt(i).update(ms);
 			}
 		}
-		[Bindable]
 		public function currentObject():Object
 		{
 			return objects.getItemAt(currentObjIndex);
