@@ -108,9 +108,9 @@ package scripts
 			vel.name = "Velocity";
 			acclr.name = "Acceleration";
 			for(i = 0; i < target.numDim; i++) {
-				pos[i] = MyUtils.roundTo(target.currentElement.position[i], 3);
-				vel[i] = MyUtils.roundTo(target.currentElement.velocity[i], 3);
-				acclr[i] = MyUtils.roundTo(target.currentElement.acceleration[i], 3);
+				pos[i] = target.currentElement.position[i].toFixed(2);
+				vel[i] = target.currentElement.velocity[i].toFixed(2);
+				acclr[i] = target.currentElement.acceleration[i].toFixed(2);
 			}
 			elementVectors.setItemAt(pos, 0);
 			elementVectors.setItemAt(vel, 1);
@@ -119,13 +119,13 @@ package scripts
 		// TIME
 		private function outputTime(event:Event):void 
 		{
-			time = String(Math.round(target.timeElapsed/10)/100); // 2 decimal places
+			time = String((target.timeElapsed/1000).toFixed(2)); // 2 decimal places
 		}
 		
 		// Speed
 		private function outputSpeed(event:Event):void 
 		{
-			speed = String(MyUtils.roundTo(target.simulationSpeed, 4));
+			speed = String(target.simulationSpeed.toFixed(2));
 		}
 	}
 }

@@ -75,7 +75,7 @@
 				<s:Button label="Slower" click="changeSpeedByStep(false, 5)"/>
 				<s:Button label="Faster" click="changeSpeedByStep(true, 5)"/>
 				<s:Button label="Reverse" click="sim.reverseTime()"/>
-				<s:Label text="Sim Speed: {sim.outputObject.speed}" />
+				<s:Label text="Sim Speed: x{sim.outputObject.speed}" />
 			</s:HGroup>
 		</s:VGroup>
 		<mx:TabNavigator width="400" height="600" creationPolicy="all">
@@ -104,7 +104,7 @@
 				<s:Label width="100%" text="Simulation Speed"/>
 				<s:HSlider
 					id="speedSlider" focusEnabled="false"
-					minimum="-2" maximum="2" value="0"
+					minimum="-1" maximum="2" value="0"
 					snapInterval="0.01" stepSize="0.05"
 					dataTipFormatFunction="simSpeedDataTip"
 					width="250" height="30"
