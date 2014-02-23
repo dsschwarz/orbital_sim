@@ -5,6 +5,7 @@ package scripts
 	import mx.graphics.SolidColorStroke;
 	
 	import spark.components.Group;
+	import spark.components.Image;
 	import spark.primitives.Ellipse;
 	import spark.primitives.Line;
 
@@ -20,6 +21,7 @@ package scripts
 		public var acclLine:Line;
 		public var parent:OrbitalSimulator;
 		public var id:int;
+		public var disabled:Boolean = false;
 		private static var idCounter:int = 1;
 		public function Element(sim:OrbitalSimulator, color:uint) // Tightly  coupled to sim
 		{
@@ -48,25 +50,12 @@ package scripts
 		}
 		
 		public function update(ms:Number):void {
-			var toVector:MyVector;
-			
-			image.x = position[0] - radius;
-			image.y = position[1] - radius;
 			velocity.add(acceleration.mult(ms/1000), true);
 			position.add(velocity.mult(ms/1000), true);
-			
+			parent.positionMember(image, position, radius);
 			// Direction Vectors
-			velLine.xFrom = position[0];
-			velLine.yFrom = position[1];
-			toVector = position.add(velocity.mult(2));
-			velLine.xTo = toVector[0];
-			velLine.yTo = toVector[1];
-			
-			acclLine.xFrom = position[0];
-			acclLine.yFrom = position[1];
-			toVector = position.add(acceleration.mult(2));
-			acclLine.xTo = toVector[0];
-			acclLine.yTo = toVector[1];
+			parent.positionLine(velLine, position, velocity, 5);
+			parent.positionLine(acclLine, position, acceleration, 5);
 			
 		}
 	}

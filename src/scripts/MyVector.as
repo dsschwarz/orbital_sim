@@ -18,6 +18,14 @@ package scripts
 				_array[i] = defVal;
 			}
 		}
+		// Create a Vector from an array/vector
+		public static function create(numDim:int, array:Array):MyVector {
+			var v:MyVector = new MyVector(numDim);
+			for (var i:int = 0; i<Math.min(numDim, array.length); i++) {
+				v[i] = array[i];
+			}
+			return v;
+		}
 		private function eachEl(op:String, b:*, inPlace:Boolean=false):MyVector {
 			var returnArray:MyVector = new MyVector(this.length);
 			for(var i:int = 0; i < this.length; i++) {

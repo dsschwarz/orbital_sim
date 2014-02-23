@@ -1,10 +1,11 @@
 package scripts
 {
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
-	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
+	import flash.ui.Keyboard;
 	import flash.utils.Timer;
 	
 	import mx.binding.utils.BindingUtils;
@@ -27,7 +28,7 @@ package scripts
 		[Bindable]
 		public var zoom:Number = 1;
 		public var pan:MyVector;    			// Top left position of screen
-		public var simulationSpeed:Number = 1; // factor to adjust speed by
+		private var _simSpeed:Number = 1; // factor to adjust speed by
 		
 		[Bindable]
 		public var objects:ArrayList = new ArrayList();
@@ -35,27 +36,20 @@ package scripts
 		public var currentElement:Element;
 		[Bindable]
 		public var outputObject:OutputObject;
+		public var placeObject:Boolean = false;
+		public var placeColor:uint = 0x30b080;
 				
 		private var eventDispatcher:EventDispatcher;
-		private var mouseDownEvent:MouseEvent;
 		private var timer:Timer;
-		private var timeElapsed:Number = 0;
+		private var _timeElapsed:Number = 0;
 		private var _reverseTime:int = 1;
 		
 		public function OrbitalSimulator(mainStage:Group)
 		{
 			canvas = new Group();
-			canvas.width = 10;
+//			canvas.autoLayout = false;
 			
 			pan = new MyVector(numDim, 0);
-			pan.listen("vectorChanged", function(event:Event):void {
-				canvas.x = pan[0];
-				canvas.y = pan[1];
-			});
-			BindingUtils.bindSetter(function(newVal:Number):void {
-				canvas.scaleX = newVal;
-				canvas.scaleY = newVal;
-			}, this,"zoom");
 			
 			eventDispatcher = new EventDispatcher(this);
 			timer = new Timer(25);
@@ -63,8 +57,12 @@ package scripts
 			
 			currentElement = this.addElement(0xF0aF50, [200, 100, 0, 0], [-20, -10, 0, 0]);
 			this.addElement(0x502FF0, [120, 200, 0, 0], [20, 10, 0, 0]);
+			
 			mainStage.addElement(canvas);
+			outputObject = new OutputObject();
+			outputObject.observe(this);
 		}
+		
 		public function update(ms:Number):void 
 		{
 			updateTimer += ms;
@@ -75,21 +73,26 @@ package scripts
 			
 			// Set to sim speed (WARNING - take care with this)
 			var scaled_ms:Number = ms * simulationSpeed * _reverseTime;
+			timeElapsed += scaled_ms;
 			var i:int, j:int, axis:int;
 			// Reset acceleration
 			for (i = 0; i < objects.length; i ++)
 			{
-				for (axis = 0; axis < numDim; axis++) {
-					objects.getItemAt(i).acceleration[axis] = 0;
-				}
+				objects.getItemAt(i).acceleration = new MyVector(numDim, 0);
 			}
 			// Handle gravity on all objects
 			for (i = 0; i < objects.length - 1; i ++)
 			{
+				var obj1:Object = objects.getItemAt(i);
+				if (obj1.disabled) {
+					continue;
+				}
 				for (j = i + 1; j < objects.length; j++)
 				{
-					var obj1:Object = objects.getItemAt(i);
 					var obj2:Object = objects.getItemAt(j);
+					if (obj2.disabled) {
+						continue;
+					}
 					var distance:MyVector = obj2.position.sub(obj1.position); // Distance vector from first obj to second
 					
 					// Calculate the absolute distance between the two objects
@@ -131,6 +134,22 @@ package scripts
 		public function draw():void {
 			
 		}
+		// convert a position vector to an x and y location on screen
+		public function positionMember(member:Object, posVector:MyVector, radius:Number = 0):void {
+			var screenLocation:MyVector = posVector.sub(radius).mult(zoom).add(pan);
+			member.scaleX = zoom;
+			member.scaleY= zoom;
+			member.x = screenLocation[0];
+			member.y = screenLocation[1];
+		}
+		public function positionLine(line:Object, posVector:MyVector, directionVector:*, lineScaleFactor:Number=1):void {
+			var fromVector:MyVector = posVector.mult(zoom).add(pan);
+			var toVector:MyVector = fromVector.add(directionVector.mult(lineScaleFactor));
+			line.xFrom = fromVector[0];
+			line.xTo = toVector[0];
+			line.yFrom = fromVector[1];
+			line.yTo = toVector[1];
+		}
 		
 		private function getTick(interval:Number):Function
 		{
@@ -144,81 +163,56 @@ package scripts
 		{
 			eventDispatcher.addEventListener.apply(this, args);
 		}
-		public function setOutputObject(obj:OutputObject):void
-		{
-			obj.elementVectors = new ArrayCollection();
-			obj.elementVectors.addItem(new MyVector(numDim));
-			obj.elementVectors.addItem(new MyVector(numDim));
-			obj.elementVectors.addItem(new MyVector(numDim));
-			function setElementVectors(event:Event):void
-			{
-				var i:int;
-				var pos:MyVector = new MyVector(numDim, 0);
-				var vel:MyVector = new MyVector(numDim, 0);
-				var acclr:MyVector = new MyVector(numDim, 0);
-				pos.name = "Position";
-				vel.name = "Velocity";
-				acclr.name = "Acceleration";
-				for(i = 0; i < numDim; i++) {
-					pos[i] = MyUtils.roundTo(currentElement.position[i], 3);
-					vel[i] = MyUtils.roundTo(currentElement.velocity[i], 3);
-					acclr[i] = MyUtils.roundTo(currentElement.acceleration[i], 3);
-				}
-				obj.elementVectors.setItemAt(pos, 0);
-				obj.elementVectors.setItemAt(vel, 1);
-				obj.elementVectors.setItemAt(acclr, 2);
-			};
-			listen("periodicUpdate", setElementVectors);
-			setElementVectors(new Event("dummyVal"))
-			
-			canvas.addEventListener(MouseEvent.MOUSE_WHEEL, function(event:MouseEvent):void {
-				var scrollFactor:Number = event.delta > 0 ? 1.25 : 0.8;
-				zoom *= scrollFactor;
-			});
-			
-			canvas.addEventListener(MouseEvent.MOUSE_DOWN, function(event:MouseEvent):void {
-				mouseDownEvent = event;
-			});
-			canvas.addEventListener(MouseEvent.MOUSE_MOVE, function(event:MouseEvent):void {
-				if (mouseDownEvent) {
-					pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
-					mouseDownEvent = event;
-				}
-			});
-			canvas.parent.addEventListener(MouseEvent.MOUSE_UP, function(event:MouseEvent):void {
-				if (mouseDownEvent) {
-					pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
-					mouseDownEvent = null;
-				}
-			});
-		}
+		
+		
+		//////////
+		// TIME //
+		//////////
+		
+		// Begin update loop
 		public function start():void
 		{
+			// WARNING: timer stops automatically after maxInt + 1 cycles
+			// TODO: look into seamlessly restarting timer
 			timer.start();
 		}
 		
+		// Stop updating
 		public function stop():void
 		{
 			timer.stop()
 		}
 		
-		public function getTimeElapsed():Number
+		public function get timeElapsed():Number
 		{
-			return timeElapsed;
+			return _timeElapsed;
+		}
+		
+		public function set timeElapsed(value:Number):void
+		{
+			_timeElapsed = value;
+			eventDispatcher.dispatchEvent(new Event("timeChanged"));
 		}
 		
 		public function resetTime():void
 		{
 			timeElapsed = 0;
 		}
+		
 		public function reverseTime():void
 		{
 			_reverseTime *= -1;
 		}
 		
-		// Will implement as soon as I solve the three-body problem
-		public function setTimeElapsed():void
+		public function set simulationSpeed(value:Number):void
 		{
+			_simSpeed = value;
+			eventDispatcher.dispatchEvent(new Event("speedChanged"));
+		}
+		
+		public function get simulationSpeed():Number
+		{
+			return _simSpeed;
 		}
 	}
 }
