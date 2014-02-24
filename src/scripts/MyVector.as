@@ -27,55 +27,44 @@ package scripts
 			return v;
 		}
 		private function eachEl(op:String, b:*, inPlace:Boolean=false):MyVector {
-			var returnArray:MyVector = new MyVector(this.length);
+			var workingVector:MyVector; // The vector apply operations to and return
+			if (inPlace) {
+				workingVector = this;
+			} else {
+				// Create a clone
+				workingVector = new MyVector(this.length);
+			}
+				
 			for(var i:int = 0; i < this.length; i++) {
 				var el:*;
 				if (b is Array || b is MyVector) {
 					// Prevent out of index errors
 					if (i >= b.length) {
-						return returnArray;
+						return workingVector;
 					}
 					el = b[i];
 				} else {
 					el = b;
 				}
-				if (inPlace) {
-					switch(op) {
-						case "add":
-							this[i] += el;
-							break;
-						case "sub":
-							this[i] -= el;
-							break;
-						case "mult":
-							this[i] *= el;
-							break;
-						case "div":
-							this[i] /= el;
-							break;
-						default:
-							trace("eachEl - unknown operator:  " + op) 
-					}
-				} else {
-					switch(op) {
-						case "add":
-							returnArray[i] = this[i] + el;
-							break;
-						case "sub":
-							returnArray[i] = this[i] - el;
-							break;
-						case "mult":
-							returnArray[i] = this[i] * el;
-							break;
-						case "div":
-							returnArray[i] = this[i] /el;
-							break;
-						default:
-							trace("eachEl - unknown operator:  " + op) 
-					}
+				
+				switch(op) {
+					case "add":
+						workingVector[i] = this[i] + el;
+						break;
+					case "sub":
+						workingVector[i] = this[i] - el;
+						break;
+					case "mult":
+						workingVector[i] = this[i] * el;
+						break;
+					case "div":
+						workingVector[i] = this[i] /el;
+						break;
+					default:
+						trace("eachEl - unknown operator:  " + op) 
 				}
 			}
-			return returnArray;
+			return workingVector;
 		}
 		
 		public function add(b:*, inPlace:Boolean=false):MyVector {

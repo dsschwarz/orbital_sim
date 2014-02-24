@@ -50,13 +50,21 @@ package scripts
 		}
 		
 		public function update(ms:Number):void {
+			if (disabled) {
+				return;
+			}
 			velocity.add(acceleration.mult(ms/1000), true);
 			position.add(velocity.mult(ms/1000), true);
+		}
+		
+		public function draw():void {
+			image.width = radius*2;
+			image.height = radius*2;
 			parent.positionMember(image, position, radius);
 			// Direction Vectors
+			// TODO get line lengths and weight that range between specific values
 			parent.positionLine(velLine, position, velocity, 5);
 			parent.positionLine(acclLine, position, acceleration, 5);
-			
 		}
 	}
 }

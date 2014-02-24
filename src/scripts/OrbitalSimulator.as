@@ -22,7 +22,7 @@ package scripts
 	public class OrbitalSimulator
 	{
 		public var G:Number = 10000;
-		public var numDim:int = 4;
+		private var _numDim:int = 4;
 		public static var updateFrequency:int = 300;
 		public var updateTimer:int = 0;
 		[Bindable]
@@ -33,10 +33,9 @@ package scripts
 		[Bindable]
 		public var objects:ArrayList = new ArrayList();
 		public var canvas:Group;
-		public var currentElement:Element;
+		private var _currentElement:Element;
 		[Bindable]
 		public var outputObject:OutputObject;
-		public var placeObject:Boolean = false;
 		public var placeColor:uint = 0x30b080;
 				
 		private var eventDispatcher:EventDispatcher;
@@ -85,12 +84,14 @@ package scripts
 			{
 				var obj1:Object = objects.getItemAt(i);
 				if (obj1.disabled) {
+					trace("disabled")
 					continue;
 				}
 				for (j = i + 1; j < objects.length; j++)
 				{
 					var obj2:Object = objects.getItemAt(j);
 					if (obj2.disabled) {
+						trace("disabled")
 						continue;
 					}
 					var distance:MyVector = obj2.position.sub(obj1.position); // Distance vector from first obj to second
@@ -130,9 +131,11 @@ package scripts
 			return el;
 		}
 		
-		// Draw additional objects such as particles
+		// Draw elements, and additional objects such as particles
 		public function draw():void {
-			
+			for (var i:int = 0; i < objects.length; i++) {
+				objects.getItemAt(i).draw();
+			}
 		}
 		// convert a position vector to an x and y location on screen
 		public function positionMember(member:Object, posVector:MyVector, radius:Number = 0):void {
@@ -150,12 +153,40 @@ package scripts
 			line.yFrom = fromVector[1];
 			line.yTo = toVector[1];
 		}
+		// Emits an event
+		public function setZoom(val:Number):void {
+			zoom = val;
+			eventDispatcher.dispatchEvent(new Event("updateZoom"));
+		}
+		public function get numDim():int
+		{
+			return _numDim;
+		}
 		
+		public function set numDim(value:int):void
+		{
+			_numDim = value;
+			eventDispatcher.dispatchEvent(new Event("changeNumDim"));
+		}
+		
+		[Bindable]
+		public function get currentElement():Element
+		{
+			return _currentElement;
+		}
+		
+		public function set currentElement(value:Element):void
+		{
+			_currentElement = value;
+			eventDispatcher.dispatchEvent(new Event("periodicUpdate"));
+			eventDispatcher.dispatchEvent(new Event("setCurrentElement"));
+		}
 		private function getTick(interval:Number):Function
 		{
 			return function tick():void
 			{
 				update(interval);
+				draw();
 			}
 		}
 		
@@ -174,12 +205,15 @@ package scripts
 		{
 			// WARNING: timer stops automatically after maxInt + 1 cycles
 			// TODO: look into seamlessly restarting timer
+			eventDispatcher.dispatchEvent(new Event("timerStart"));
 			timer.start();
 		}
 		
 		// Stop updating
 		public function stop():void
 		{
+			eventDispatcher.dispatchEvent(new Event("periodicUpdate"));
+			eventDispatcher.dispatchEvent(new Event("timerStop"));
 			timer.stop()
 		}
 		

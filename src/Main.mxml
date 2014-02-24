@@ -8,53 +8,7 @@
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
-	<fx:Script>
-		<![CDATA[			
-			import mx.collections.ArrayCollection;
-			import mx.events.DragEvent;
-			
-			import scripts.Element;
-			import scripts.MyUtils;
-			import scripts.MyVector;
-			import scripts.OrbitalSimulator;
-			
-			import spark.events.IndexChangeEvent;
-			
-			[Bindable]
-			public var sim:OrbitalSimulator;
-			
-			public function init():void 
-			{
-				trace("Initializing");
-				
-				sim = new OrbitalSimulator(mainStage);
-				sim.start();
-				
-				objListDropDown.selectedIndex = 0;
-			}
-			public function objListChange(event:IndexChangeEvent):void
-			{
-				sim.currentElement = sim.objects.getItemAt(event.newIndex) as Element;
-			}
-			
-			public function setSimulationSpeed(event:Event):void
-			{
-				sim.simulationSpeed = Math.pow(10, event.target.value); 
-			}
-			
-			public function simSpeedDataTip(val:String):String
-			{
-				var scaleAmount:Number = Math.pow(10, Number(val));
-				return "Speed x" + String(MyUtils.roundTo(scaleAmount, 2));
-			}
-			
-			public function changeSpeedByStep(increase:Boolean=true, steps:int=1):void
-			{
-				var dir:int = increase ? 1 : -1;
-				speedSlider.value += speedSlider.stepSize * dir * steps;
-				speedSlider.dispatchEvent(new Event(Event.CHANGE));
-			}
-		]]>
+	<fx:Script source="Main.as">
 	</fx:Script>
 	<s:HGroup>
 		<s:VGroup>
@@ -70,6 +24,7 @@
 				<s:Button label="Pause" click="sim.stop()"/>
 				<s:Button label="Stop" click="sim.stop(), sim.resetTime()"/>
 				<s:Label text="Time Elapsed: {sim.outputObject.time}" />
+				<s:Button right="0" label="Reset Screen" click="sim.setZoom(1); sim.pan.mult(0, true)"/>
 			</s:HGroup>
 			<s:HGroup>
 				<s:Button label="Slower" click="changeSpeedByStep(false, 5)"/>
@@ -83,19 +38,12 @@
 				<s:layout>
 					<s:VerticalLayout paddingTop="10"/>
 				</s:layout>
-				<s:DropDownList id="objListDropDown" dataProvider="{sim.objects}" labelField="id" change="objListChange(event)"></s:DropDownList>
-				<s:DataGrid dataProvider="{sim.outputObject.elementVectors}" id="vectorTable" width="100%" editable="true"
-							requestedRowCount="3">
-					<s:columns>
-						<s:ArrayList>
-							<s:GridColumn dataField="name" headerText=""></s:GridColumn>
-							<s:GridColumn dataField="0" headerText="x"></s:GridColumn>
-							<s:GridColumn dataField="1" headerText="y"></s:GridColumn>
-							<s:GridColumn dataField="2" headerText="z"></s:GridColumn>
-							<s:GridColumn dataField="3" headerText="w"></s:GridColumn>
-						</s:ArrayList>
-					</s:columns>
+				<s:DropDownList id="objListDropDown" name="objectDropdown" dataProvider="{sim.objects}" labelField="id" change="objListChange(event)"></s:DropDownList>
+				<s:DataGrid dataProvider="{sim.outputObject.elementVectors}" id="vectorTable" width="100%" editable="{!sim.outputObject.simulating}"
+							requestedRowCount="3" columns="{sim.outputObject.getGridColumns()}">
 				</s:DataGrid>
+				<s:Label text="Radius: {sim.outputObject.radius}m" />
+				<s:Label text="Mass: {sim.outputObject.mass}kg" />
 			</s:NavigatorContent>
 			<s:NavigatorContent label="Simulation Options">
 				<s:layout>
@@ -109,6 +57,13 @@
 					dataTipFormatFunction="simSpeedDataTip"
 					width="250" height="30"
 					change="setSimulationSpeed(event)"/>
+				<s:Label width="100%" text="Zoom"/>
+				<s:HSlider
+					id="zoomSlider" focusEnabled="false"
+					minimum="0.1" maximum="10" value="1"
+					snapInterval="0.01" stepSize="0.05"
+					width="250" height="30"
+					change="sim.zoom=zoomSlider.value"/>
 			</s:NavigatorContent>
 		</mx:TabNavigator>
 		
