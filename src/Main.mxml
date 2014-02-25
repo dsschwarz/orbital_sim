@@ -23,13 +23,14 @@
 				<s:Button label="Play" click="sim.start()"/>
 				<s:Button label="Pause" click="sim.stop()"/>
 				<s:Button label="Stop" click="sim.stop(), sim.resetTime()"/>
-				<s:Label text="Time Elapsed: {sim.outputObject.time}" />
 				<s:Button right="0" label="Reset Screen" click="sim.setZoom(1); sim.pan.mult(0, true)"/>
+				<s:Label text="Time Elapsed: {sim.outputObject.time}" />
 			</s:HGroup>
 			<s:HGroup>
 				<s:Button label="Slower" click="changeSpeedByStep(false, 5)"/>
 				<s:Button label="Faster" click="changeSpeedByStep(true, 5)"/>
 				<s:Button label="Reverse" click="sim.reverseTime()"/>
+				<s:Button right="0" label="Reset Sim" click="resetSim()"/>
 				<s:Label text="Sim Speed: x{sim.outputObject.speed}" />
 			</s:HGroup>
 		</s:VGroup>
@@ -38,7 +39,10 @@
 				<s:layout>
 					<s:VerticalLayout paddingTop="10"/>
 				</s:layout>
-				<s:DropDownList id="objListDropDown" name="objectDropdown" dataProvider="{sim.objects}" labelField="id" change="objListChange(event)"></s:DropDownList>
+				<s:DropDownList id="objListDropDown" name="objListDropDown"
+								dataProvider="{sim.objects}" labelField="id"
+								change="objListChange(event)"/>
+				<s:Button label="Remove" click="sim.removeElement(sim.currentElement)"/>
 				<s:DataGrid dataProvider="{sim.outputObject.elementVectors}" id="vectorTable" width="100%" editable="{!sim.outputObject.simulating}"
 							requestedRowCount="3" columns="{sim.outputObject.getGridColumns()}">
 				</s:DataGrid>

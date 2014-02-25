@@ -37,6 +37,7 @@ package scripts
 		[Bindable]
 		public var outputObject:OutputObject;
 		public var placeColor:uint = 0x30b080;
+		public var idCounter:int = 1; // Resets for a new instance
 				
 		private var eventDispatcher:EventDispatcher;
 		private var timer:Timer;
@@ -82,14 +83,14 @@ package scripts
 			// Handle gravity on all objects
 			for (i = 0; i < objects.length - 1; i ++)
 			{
-				var obj1:Object = objects.getItemAt(i);
+				var obj1:Element = objects.getItemAt(i) as Element;
 				if (obj1.disabled) {
 					trace("disabled")
 					continue;
 				}
 				for (j = i + 1; j < objects.length; j++)
 				{
-					var obj2:Object = objects.getItemAt(j);
+					var obj2:Element = objects.getItemAt(j) as Element;
 					if (obj2.disabled) {
 						trace("disabled")
 						continue;
@@ -102,8 +103,35 @@ package scripts
 						absDistSq += Math.pow(distance[axis], 2);
 					}
 					
+					// Detect collision
+					if (absDistSq < Math.pow(obj1.radius + obj2.radius, 2)) {
+						trace("Collision detected");
+						var uDist:MyVector = distance.normalize(); // Unit vector from obj 1 to 2
+						var finalDist:MyVector = uDist.mult(obj1.radius + obj2.radius); // distance so that objects are touching
+						
+						var u1:MyVector = obj1.velocity.mult(uDist); // Dot product to get velocity before collision in direction towards other sphere
+						var u2:MyVector = obj2.velocity.mult(uDist);
+						var m1:Number = obj1.mass;
+						var m2:Number = obj2.mass;
+						var C:Number = 1; // Ratio of energy after to energy before
+						
+						// Velocity after collision (in normal direction still)
+						// https://en.wikipedia.org/wiki/Inelastic_collision#Formula
+						var v1:MyVector = u2.sub(u1).mult(m2 * C).add(u1.mult(m1)).add(u2.mult(m2)).div(m1+m2);
+						var v2:MyVector = u1.sub(u2).mult(m1 * C).add(u1.mult(m1)).add(u2.mult(m2)).div(m1+m2);
+						
+						// Adjust obj1's total post collision velocity
+						obj1.velocity.add(v1.sub(u1).mult(uDist), true);
+						obj2.velocity.add(v2.sub(u2).mult(uDist), true);
+						
+						// Adjust position so objects are touching
+						obj1.position.sub(finalDist.sub(distance).div(2), true);
+						obj2.position.add(finalDist.sub(distance).div(2), true);
+						var space:int=1;
+							// NOTE: only calc acceleration if objects didn't collide this frame
+					} else {
+					
 					// Add acceleration due to this gravity to total acceleration of each object
-					if (absDistSq > 0) {
 						// acceleration on 1 due to 2 = G * m2 / d
 						var acclrOn1:Number = G*obj2.mass/absDistSq;
 						obj1.acceleration.add( distance.normalize().mult(acclrOn1), true );
@@ -247,6 +275,22 @@ package scripts
 		public function get simulationSpeed():Number
 		{
 			return _simSpeed;
+		}
+		public function removeElement(element:Element):void {
+			element.destroy();
+			objects.removeItem(element);
+			if (element == currentElement && objects.length > 0) {
+				currentElement = objects.getItemAt(0) as Element;
+			}
+		}
+		public function destroy():void {
+//			for (var i:int = 0; i < objects.length; i++) {
+//				objects[i].destroy();
+//			}
+			objects.removeAll();
+			canvas.removeAllElements();
+			timer.stop();
+			
 		}
 	}
 }

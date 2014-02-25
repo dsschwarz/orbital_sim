@@ -14,18 +14,17 @@ package scripts
 		public var position:MyVector;
 		public var velocity:MyVector;
 		public var acceleration:MyVector;
-		public var mass:Number = 10;
-		public var radius:Number = 5;
+		public var mass:Number = 1;
+		public var radius:Number = 50;
 		public var image:Ellipse;
 		public var velLine:Line;
 		public var acclLine:Line;
 		public var parent:OrbitalSimulator;
 		public var id:int;
 		public var disabled:Boolean = false;
-		private static var idCounter:int = 1;
 		public function Element(sim:OrbitalSimulator, color:uint) // Tightly  coupled to sim
 		{
-			id = idCounter++;
+			id = sim.idCounter++;
 			parent = sim;
 			position = new MyVector(sim.numDim, 0);
 			velocity = new MyVector(sim.numDim, 0);
@@ -65,6 +64,12 @@ package scripts
 			// TODO get line lengths and weight that range between specific values
 			parent.positionLine(velLine, position, velocity, 5);
 			parent.positionLine(acclLine, position, acceleration, 5);
+		}
+		
+		public function destroy():void {
+			parent.canvas.removeElement(image);
+			parent.canvas.removeElement(acclLine);
+			parent.canvas.removeElement(velLine);
 		}
 	}
 }

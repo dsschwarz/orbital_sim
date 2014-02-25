@@ -6,6 +6,7 @@ import scripts.MyUtils;
 import scripts.MyVector;
 import scripts.OrbitalSimulator;
 
+import spark.components.DropDownList;
 import spark.components.gridClasses.GridColumn;
 import spark.events.IndexChangeEvent;
 
@@ -22,6 +23,15 @@ public function init():void
 		zoomSlider.value = sim.zoom;
 	});
 	objListDropDown.selectedIndex = 0;
+	
+	
+	sim.listen("setCurrentElement", function (event:Event):void {
+		objListDropDown.selectedItem = sim.currentElement;
+	});
+}
+public function resetSim():void {
+	sim.destroy();
+	init();
 }
 public function objListChange(event:IndexChangeEvent):void
 {
@@ -38,7 +48,6 @@ public function simSpeedDataTip(val:String):String
 	var scaleAmount:Number = Math.pow(10, Number(val));
 	return "Speed x" + String(MyUtils.roundTo(scaleAmount, 2));
 }
-
 public function changeSpeedByStep(increase:Boolean=true, steps:int=1):void
 {
 	var dir:int = increase ? 1 : -1;

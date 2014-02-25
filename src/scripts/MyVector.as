@@ -84,13 +84,19 @@ package scripts
 		}
 		
 		
-		public function normalize():MyVector {
-			var newArray:MyVector = new MyVector(this.length);
+		public function normalize(inPlace:Boolean=false):MyVector {
+			var returnArray:MyVector;
+			if (inPlace) {
+				returnArray = this;
+			} else {
+				returnArray = new MyVector(this.length);
+			}
 			
 			this.forEach(function(el:*, index:int, array:*):void {
-				newArray[index] = (el/this.mag());
+				returnArray[index] = (el/this.mag());
 			}, this);
-			return newArray;
+			
+			return returnArray;
 		}
 		
 		public function mag():Number

@@ -21,6 +21,7 @@ package scripts
 		public var time:String;
 		public var speed:String;
 		public var simulating:Boolean;
+		public var selectedIndex:int;
 		private var mouseDownEvent:MouseEvent;
 		
 		public var target:OrbitalSimulator;
@@ -48,9 +49,6 @@ package scripts
 			elementVectors.addItem(new MyVector(target.numDim));
 			
 			target.listen("periodicUpdate", setElementVectors);
-			target.listen("setCurrentElement", function (event:Event):void {
-				target.currentElement.radius +=1;
-			});
 			setElementVectors(new Event("dummyVal"));
 			
 			// ZOOM and PAN
@@ -65,6 +63,7 @@ package scripts
 				mouseDownEvent = event;
 				if (placeObject) {
 					// object didn't get placed!!
+					placeObject.disabled = false;
 					target.objects.addItem(placeObject); // we'll just add it on and forget it for now, add destructors later
 				}
 				if (event.ctrlKey) {
@@ -72,9 +71,8 @@ package scripts
 					var position:MyVector = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
 					position.sub(target.pan, true).div(target.zoom, true);
 					
-					placeObject = new Element(target, target.placeColor);
-					placeObject.position.add(position, true);
-					placeObject.draw();
+					placeObject = target.addElement(target.placeColor, position);
+					placeObject.disabled = true;
 					target.currentElement = placeObject;
 				}
 			});
@@ -84,7 +82,6 @@ package scripts
 					if (placeObject) {
 						// mouseDownEvent still points at original click
 						placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY, 0, 0]);
-						placeObject.draw();
 					} else {
 						target.pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
 						mouseDownEvent = event;	// Reset to point at last position (allows pan)
@@ -99,8 +96,7 @@ package scripts
 				if (mouseDownEvent) {
 					if (placeObject) {
 						placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY, 0, 0]);
-						target.objects.addItem(placeObject);
-						placeObject.draw();
+						placeObject.disabled = false;
 						placeObject = null;
 					} else {
 						target.pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
