@@ -29,6 +29,11 @@ package scripts
 		public var zoom:Number = 1;
 		public var pan:MyVector;    			// Top left position of screen
 		private var _simSpeed:Number = 1; // factor to adjust speed by
+		[Bindable]
+		public var collisionsEnabled:Boolean = true;
+		[Bindable]
+		public var stickyCollisions:Boolean = false; // If objects stick together after collision
+		public var eRatio:Number = 1; // Ratio of energy after to energy before
 		
 		[Bindable]
 		public var objects:ArrayList = new ArrayList();
@@ -65,6 +70,9 @@ package scripts
 		
 		public function update(ms:Number):void 
 		{
+			if (objects.length == 0) {
+				return;
+			}
 			updateTimer += ms;
 			if (updateTimer > updateFrequency) {
 				updateTimer = 0;
@@ -104,22 +112,30 @@ package scripts
 					}
 					
 					// Detect collision
-					if (absDistSq < Math.pow(obj1.radius + obj2.radius, 2)) {
+					if (collisionsEnabled && (absDistSq < Math.pow(obj1.radius + obj2.radius, 2))) {
 						trace("Collision detected");
+						var m1:Number = obj1.mass;
+						var m2:Number = obj2.mass;
 						var uDist:MyVector = distance.normalize(); // Unit vector from obj 1 to 2
 						var finalDist:MyVector = uDist.mult(obj1.radius + obj2.radius); // distance so that objects are touching
 						
 						var u1:MyVector = obj1.velocity.mult(uDist); // Dot product to get velocity before collision in direction towards other sphere
 						var u2:MyVector = obj2.velocity.mult(uDist);
-						var m1:Number = obj1.mass;
-						var m2:Number = obj2.mass;
-						var C:Number = 1; // Ratio of energy after to energy before
 						
-						// Velocity after collision (in normal direction still)
-						// https://en.wikipedia.org/wiki/Inelastic_collision#Formula
-						var v1:MyVector = u2.sub(u1).mult(m2 * C).add(u1.mult(m1)).add(u2.mult(m2)).div(m1+m2);
-						var v2:MyVector = u1.sub(u2).mult(m1 * C).add(u1.mult(m1)).add(u2.mult(m2)).div(m1+m2);
+						var v1:MyVector;
+						var v2:MyVector;
 						
+						if (stickyCollisions) {
+							// https://en.wikipedia.org/wiki/Inelastic_collision#Perfectly_inelastic_collision
+							v1 = u1.mult(m1).add(u2.mult(m2)).div(m1+m2);
+							v2 = v1.add(0); // Clone it for safety
+						} else {
+							var energyRatio:Number = Math.pow(eRatio, _reverseTime); // Gains energy when going backwards in time (1/C)
+							// Velocity after collision (in normal direction still)
+							// https://en.wikipedia.org/wiki/Inelastic_collision#Formula
+							v1 = u2.sub(u1).mult(m2 * energyRatio).add(u1.mult(m1)).add(u2.mult(m2)).div(m1+m2);
+							v2 = u1.sub(u2).mult(m1 * energyRatio).add(u1.mult(m1)).add(u2.mult(m2)).div(m1+m2);
+						}
 						// Adjust obj1's total post collision velocity
 						obj1.velocity.add(v1.sub(u1).mult(uDist), true);
 						obj2.velocity.add(v2.sub(u2).mult(uDist), true);
@@ -127,8 +143,8 @@ package scripts
 						// Adjust position so objects are touching
 						obj1.position.sub(finalDist.sub(distance).div(2), true);
 						obj2.position.add(finalDist.sub(distance).div(2), true);
-						var space:int=1;
-							// NOTE: only calc acceleration if objects didn't collide this frame
+						
+					// NOTE: only calc acceleration if objects didn't collide this frame
 					} else {
 					
 					// Add acceleration due to this gravity to total acceleration of each object
@@ -197,7 +213,7 @@ package scripts
 			eventDispatcher.dispatchEvent(new Event("changeNumDim"));
 		}
 		
-		[Bindable]
+		[Bindable(name="setCurrentElement")]
 		public function get currentElement():Element
 		{
 			return _currentElement;
@@ -206,7 +222,6 @@ package scripts
 		public function set currentElement(value:Element):void
 		{
 			_currentElement = value;
-			eventDispatcher.dispatchEvent(new Event("periodicUpdate"));
 			eventDispatcher.dispatchEvent(new Event("setCurrentElement"));
 		}
 		private function getTick(interval:Number):Function
@@ -277,10 +292,15 @@ package scripts
 			return _simSpeed;
 		}
 		public function removeElement(element:Element):void {
+			if (element == null) {
+				return;
+			}
 			element.destroy();
 			objects.removeItem(element);
 			if (element == currentElement && objects.length > 0) {
 				currentElement = objects.getItemAt(0) as Element;
+			} else {
+				currentElement = null;
 			}
 		}
 		public function destroy():void {

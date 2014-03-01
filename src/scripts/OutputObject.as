@@ -6,6 +6,7 @@ package scripts
 	
 	import mx.binding.utils.BindingUtils;
 	import mx.collections.ArrayCollection;
+	import mx.core.FlexGlobals;
 	
 	import spark.components.DropDownList;
 	import spark.components.gridClasses.GridColumn;
@@ -14,10 +15,10 @@ package scripts
 	public class OutputObject
 	{
 		// Bound to target.currentElement
-		public var mass:String;
-		public var radius:String;
 		public var elementVectors:ArrayCollection;
 		
+		public var mass:Number;
+		public var radius:Number;
 		public var time:String;
 		public var speed:String;
 		public var simulating:Boolean;
@@ -26,21 +27,9 @@ package scripts
 		
 		public var target:OrbitalSimulator;
 		private var placeObject:Element; // Element being placed
-		public function OutputObject(specs:Object=null)
-		{
-			if (specs) {
-				mass = specs.mass;
-				radius = specs.radius;
-				
-				time = specs.time;
-				speed = specs.speed;
-			}
-		}
 		public function observe(target:OrbitalSimulator):void
 		{
 			this.target = target;
-			BindingUtils.bindProperty(this, "mass", target, ["currentElement", "mass"]);
-			BindingUtils.bindProperty(this, "radius", target, ["currentElement", "radius"]);
 			// Create vectors to output position, acclr, etc on current object
 			// update every few cycles
 			elementVectors = new ArrayCollection();
@@ -49,7 +38,8 @@ package scripts
 			elementVectors.addItem(new MyVector(target.numDim));
 			
 			target.listen("periodicUpdate", setElementVectors);
-			setElementVectors(new Event("dummyVal"));
+			target.listen("setCurrentElement", outputCurrElement);
+			outputCurrElement();
 			
 			// ZOOM and PAN
 			// zoom on scroll
@@ -63,8 +53,7 @@ package scripts
 				mouseDownEvent = event;
 				if (placeObject) {
 					// object didn't get placed!!
-					placeObject.disabled = false;
-					target.objects.addItem(placeObject); // we'll just add it on and forget it for now, add destructors later
+					placeObject.disabled = false; // we'll just add it on and forget it for now, add destructors later
 				}
 				if (event.ctrlKey) {
 					// Place Object
@@ -108,8 +97,9 @@ package scripts
 				}
 			});
 			
-			target.canvas.parentApplication.addEventListener(KeyboardEvent.KEY_DOWN, function(event:KeyboardEvent):void {
+			FlexGlobals.topLevelApplication.addEventListener(KeyboardEvent.KEY_DOWN, function(event:KeyboardEvent):void {
 				if (event.keyCode == 32) {
+					trace("Spaaaaace")
 					if (simulating) {
 						target.stop();
 					} else {
@@ -127,6 +117,18 @@ package scripts
 			target.listen("timerStart", function():void{ simulating = true; });
 			target.listen("timerStop", function():void{ simulating = false; });
 		};
+		private function outputCurrElement(event:Event=null):void {
+			setElementVectors(event);
+			if (target.currentElement) {
+				mass = target.currentElement.mass;
+				radius = target.currentElement.radius;
+				FlexGlobals.topLevelApplication.massTextInput.text = mass;
+				FlexGlobals.topLevelApplication.radiusTextInput.text = radius;
+			} else {
+				mass = 0;
+				radius = 0;
+			}
+		}
 		private function setElementVectors(event:Event=null):void
 		{
 			var i:int;
@@ -136,10 +138,12 @@ package scripts
 			pos.name = "Position";
 			vel.name = "Velocity";
 			acclr.name = "Acceleration";
-			for(i = 0; i < target.numDim; i++) {
-				pos[i] = target.currentElement.position[i].toFixed(2);
-				vel[i] = target.currentElement.velocity[i].toFixed(2);
-				acclr[i] = target.currentElement.acceleration[i].toFixed(2);
+			if (target.currentElement) {
+				for(i = 0; i < target.numDim; i++) {
+					pos[i] = target.currentElement.position[i].toFixed(2);
+					vel[i] = target.currentElement.velocity[i].toFixed(2);
+					acclr[i] = target.currentElement.acceleration[i].toFixed(2);
+				}
 			}
 			elementVectors.setItemAt(pos, 0);
 			elementVectors.setItemAt(vel, 1);

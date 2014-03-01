@@ -5,6 +5,7 @@
 			   width="1000"
 			   height="600"
 			   xmlns:mx="library://ns.adobe.com/flex/mx">
+	
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
@@ -20,20 +21,22 @@
 				</s:Rect>
 			</s:Group>
 			<s:HGroup>
-				<s:Button label="Play" click="sim.start()"/>
-				<s:Button label="Pause" click="sim.stop()"/>
-				<s:Button label="Stop" click="sim.stop(), sim.resetTime()"/>
-				<s:Button right="0" label="Reset Screen" click="sim.setZoom(1); sim.pan.mult(0, true)"/>
-				<s:Label text="Time Elapsed: {sim.outputObject.time}" />
+				<s:Button label="Play" click="sim.start()" focusEnabled="false"/>
+				<s:Button label="Pause" click="sim.stop()" focusEnabled="false"/>
+				<s:Button label="Stop" click="sim.stop(), sim.resetTime()" focusEnabled="false"/>
+				<s:Button right="0" label="Reset Screen" click="sim.setZoom(1); sim.pan.mult(0, true)" focusEnabled="false"/>
+				<s:Label text="Time Elapsed: {sim.outputObject.time}" focusEnabled="false"/>
 			</s:HGroup>
 			<s:HGroup>
-				<s:Button label="Slower" click="changeSpeedByStep(false, 5)"/>
-				<s:Button label="Faster" click="changeSpeedByStep(true, 5)"/>
-				<s:Button label="Reverse" click="sim.reverseTime()"/>
-				<s:Button right="0" label="Reset Sim" click="resetSim()"/>
-				<s:Label text="Sim Speed: x{sim.outputObject.speed}" />
+				<s:Button label="Slower" click="changeSpeedByStep(false, 5)" focusEnabled="false"/>
+				<s:Button label="Faster" click="changeSpeedByStep(true, 5)" focusEnabled="false"/>
+				<s:Button label="Reverse" click="sim.reverseTime()" focusEnabled="false"/>
+				<s:Button right="0" label="Reset Sim" click="resetSim()" focusEnabled="false"/>
+				<s:Label text="Sim Speed: x{sim.outputObject.speed}" focusEnabled="false"/>
 			</s:HGroup>
 		</s:VGroup>
+		
+		
 		<mx:TabNavigator width="400" height="600" creationPolicy="all">
 			<s:NavigatorContent label="Objects">
 				<s:layout>
@@ -43,12 +46,22 @@
 								dataProvider="{sim.objects}" labelField="id"
 								change="objListChange(event)"/>
 				<s:Button label="Remove" click="sim.removeElement(sim.currentElement)"/>
-				<s:DataGrid dataProvider="{sim.outputObject.elementVectors}" id="vectorTable" width="100%" editable="{!sim.outputObject.simulating}"
-							requestedRowCount="3" columns="{sim.outputObject.getGridColumns()}">
+				<s:DataGrid dataProvider="{sim.outputObject.elementVectors}" id="vectorTable" width="100%" editable="{!sim.outputObject.simulating}" gridItemEditorSessionStarting="preventEdit(event)"
+							requestedRowCount="3" columns="{sim.outputObject.getGridColumns()}" gridItemEditorSessionSave="objectEdit_saveHandler(event)">
 				</s:DataGrid>
-				<s:Label text="Radius: {sim.outputObject.radius}m" />
-				<s:Label text="Mass: {sim.outputObject.mass}kg" />
+				<s:HGroup>
+					<s:Label text="Radius:" />
+					<s:TextInput id="radiusTextInput" change="radiusText_changeHandler(event)" />
+					<s:Label text="m"/>
+				</s:HGroup>
+				<s:HGroup>
+					<s:Label text="Mass:" />
+					<s:TextInput id="massTextInput" change="massText_changeHandler(event)" />
+					<s:Label text="kg"/>
+				</s:HGroup>
 			</s:NavigatorContent>
+			
+			
 			<s:NavigatorContent label="Simulation Options">
 				<s:layout>
 					<s:VerticalLayout paddingTop="10"/>
@@ -68,6 +81,15 @@
 					snapInterval="0.01" stepSize="0.05"
 					width="250" height="30"
 					change="sim.zoom=zoomSlider.value"/>
+				<s:CheckBox change="sim.collisionsEnabled=event.target.selected" label="Collisions" selected="{sim.collisionsEnabled}"/>
+				<s:CheckBox id="stickyColl" change="sim.stickyCollisions=event.target.selected" label="Sticky Collisions" selected="{sim.stickyCollisions}" visible="{sim.collisionsEnabled}"/>
+				<s:HSlider
+					id="elasticitySlider" focusEnabled="false"
+					visible="{sim.collisionsEnabled &amp;&amp; !sim.stickyCollisions}"
+					minimum="0" maximum="1" value="1"
+					snapInterval="0.01" stepSize="0.05"
+					width="250" height="30"
+					change="sim.eRatio=elasticitySlider.value"/>
 			</s:NavigatorContent>
 		</mx:TabNavigator>
 		

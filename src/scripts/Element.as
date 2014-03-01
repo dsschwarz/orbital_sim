@@ -14,7 +14,9 @@ package scripts
 		public var position:MyVector;
 		public var velocity:MyVector;
 		public var acceleration:MyVector;
+		[Bindable]
 		public var mass:Number = 1;
+		[Bindable]
 		public var radius:Number = 50;
 		public var image:Ellipse;
 		public var velLine:Line;
@@ -67,9 +69,14 @@ package scripts
 		}
 		
 		public function destroy():void {
-			parent.canvas.removeElement(image);
-			parent.canvas.removeElement(acclLine);
-			parent.canvas.removeElement(velLine);
+			try {
+				parent.canvas.removeElement(image);
+				parent.canvas.removeElement(acclLine);
+				parent.canvas.removeElement(velLine);
+			} catch(err:Error) {
+				trace("Error removing element");
+				trace(err);
+			}
 		}
 	}
 }

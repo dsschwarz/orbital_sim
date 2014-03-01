@@ -1,6 +1,9 @@
 // ActionScript file
 import flash.events.Event;
 
+import mx.collections.ArrayCollection;
+import mx.controls.Alert;
+
 import scripts.Element;
 import scripts.MyUtils;
 import scripts.MyVector;
@@ -8,7 +11,9 @@ import scripts.OrbitalSimulator;
 
 import spark.components.DropDownList;
 import spark.components.gridClasses.GridColumn;
+import spark.events.GridItemEditorEvent;
 import spark.events.IndexChangeEvent;
+import spark.events.TextOperationEvent;
 
 [Bindable]
 public var sim:OrbitalSimulator;
@@ -53,4 +58,57 @@ public function changeSpeedByStep(increase:Boolean=true, steps:int=1):void
 	var dir:int = increase ? 1 : -1;
 	speedSlider.value += speedSlider.stepSize * dir * steps;
 	speedSlider.dispatchEvent(new Event(Event.CHANGE));
+}
+
+public function preventEdit(event:GridItemEditorEvent):void {
+	if (event.rowIndex >= 2) {
+		event.preventDefault();
+	}
+}
+protected function objectEdit_saveHandler(event:GridItemEditorEvent):void
+{
+	trace("Save");
+	var item:Element = sim.currentElement;
+	if (!item) {
+		return;
+	}
+	var column:String = event.column.dataField;
+	var row:int = event.rowIndex;
+	var value:Number = event.target.dataProvider.getItemAt(row)[column];
+	if (isNaN(value)) {
+		Alert.show("Please enter a valid number")
+		return; 
+	}
+	var rowName:String;
+	if (row == 0) {
+		rowName = "position";
+	} else if (row == 1) {
+		rowName = "velocity";
+	} else {
+		trace("Not a valid row");
+		return;
+	}
+	
+	item[rowName][int(column)] = value;
+}
+
+protected function radiusText_changeHandler(event:TextOperationEvent):void
+{
+	var val:Number = Number(event.target.text);
+	if (isNaN(val)) {
+		Alert("Enter a valid number");
+		return;
+	}
+	
+	sim.currentElement.radius = val;
+}
+protected function massText_changeHandler(event:TextOperationEvent):void
+{
+	var val:Number = Number(event.target.text);
+	if (isNaN(val)) {
+		Alert("Enter a valid number");
+		return;
+	}
+	
+	sim.currentElement.mass = val;
 }
