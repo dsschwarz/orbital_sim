@@ -25,11 +25,15 @@ package scripts
 		public var selectedIndex:int;
 		private var mouseDownEvent:MouseEvent;
 		
+		public var colList:ArrayCollection = new ArrayCollection();
+		
 		public var target:OrbitalSimulator;
 		private var placeObject:Element; // Element being placed
 		public function observe(target:OrbitalSimulator):void
 		{
 			this.target = target;
+			setGridColumns();
+			target.listen("changeNumDim", setGridColumns);
 			// Create vectors to output position, acclr, etc on current object
 			// update every few cycles
 			elementVectors = new ArrayCollection();
@@ -50,14 +54,24 @@ package scripts
 			
 			// MOUSE EVENTS
 			target.canvas.parent.addEventListener(MouseEvent.MOUSE_DOWN, function(event:MouseEvent):void {
+				var position:MyVector
 				mouseDownEvent = event;
 				if (placeObject) {
 					// object didn't get placed!!
 					placeObject.disabled = false; // we'll just add it on and forget it for now, add destructors later
 				}
-				if (event.ctrlKey) {
+				if (target.placeObject) { // Place an existing object
 					// Place Object
-					var position:MyVector = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
+					position = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
+					position.sub(target.pan, true).div(target.zoom, true);
+					
+					placeObject = target.placeObject;
+					placeObject.disabled = true;
+					target.currentElement = placeObject;
+					target.placeObject = null;
+				} else if (event.ctrlKey) {
+					// Place Object
+					position = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
 					position.sub(target.pan, true).div(target.zoom, true);
 					
 					placeObject = target.addElement(target.placeColor, position);
@@ -67,10 +81,16 @@ package scripts
 			});
 			
 			target.canvas.parent.addEventListener(MouseEvent.MOUSE_MOVE, function(event:MouseEvent):void {
+				if (target.placeObject) {
+					// Follows mouse
+					var position:MyVector = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
+					position.sub(target.pan, true).div(target.zoom, true);
+					target.placeObject.position = position;
+				}
 				if (mouseDownEvent) {
 					if (placeObject) {
 						// mouseDownEvent still points at original click
-						placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY, 0, 0]);
+						placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY]);
 					} else {
 						target.pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
 						mouseDownEvent = event;	// Reset to point at last position (allows pan)
@@ -84,7 +104,7 @@ package scripts
 			target.canvas.parentApplication.addEventListener(MouseEvent.MOUSE_UP, function(event:MouseEvent):void {
 				if (mouseDownEvent) {
 					if (placeObject) {
-						placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY, 0, 0]);
+						placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY]);
 						placeObject.disabled = false;
 						placeObject = null;
 					} else {
@@ -154,9 +174,9 @@ package scripts
 		{
 			time = String((target.timeElapsed/1000).toFixed(2)); // 2 decimal places
 		}
-		public function getGridColumns():ArrayCollection
+		public function setGridColumns(event:Event=null):ArrayCollection
 		{
-			var colList:ArrayCollection = new ArrayCollection();
+			colList.removeAll();
 			for (var i:int = 0; i < target.numDim; i++) {
 				var col:GridColumn = new GridColumn("Axis" + (i + 1));
 				col.dataField = String(i);

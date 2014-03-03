@@ -39,6 +39,7 @@ package scripts
 		public var objects:ArrayList = new ArrayList();
 		public var canvas:Group;
 		private var _currentElement:Element;
+		public var placeObject:Element;
 		[Bindable]
 		public var outputObject:OutputObject;
 		public var placeColor:uint = 0x30b080;
@@ -202,6 +203,8 @@ package scripts
 			zoom = val;
 			eventDispatcher.dispatchEvent(new Event("updateZoom"));
 		}
+		
+		[Bindable("changeNumDim")]
 		public function get numDim():int
 		{
 			return _numDim;
@@ -210,6 +213,11 @@ package scripts
 		public function set numDim(value:int):void
 		{
 			_numDim = value;
+			// Every objects vectors must be updated
+			for (var i:int=0; i < objects.length; i++) {
+				var obj:Element = objects.getItemAt(i) as Element;
+				obj.newDim(numDim);
+			}
 			eventDispatcher.dispatchEvent(new Event("changeNumDim"));
 		}
 		

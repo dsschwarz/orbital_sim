@@ -19,10 +19,10 @@ package scripts
 			}
 		}
 		// Create a Vector from an array/vector
-		public static function create(numDim:int, array:Array):MyVector {
+		public static function create(numDim:int, array:Array, defVal:*=0):MyVector {
 			var v:MyVector = new MyVector(numDim);
-			for (var i:int = 0; i<Math.min(numDim, array.length); i++) {
-				v[i] = array[i];
+			for (var i:int = 0; i< numDim; i++) {
+				v[i] = array[i] || defVal;
 			}
 			return v;
 		}

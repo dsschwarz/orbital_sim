@@ -1,5 +1,6 @@
 // ActionScript file
 import flash.events.Event;
+import flash.events.FocusEvent;
 
 import mx.collections.ArrayCollection;
 import mx.controls.Alert;
@@ -92,23 +93,34 @@ protected function objectEdit_saveHandler(event:GridItemEditorEvent):void
 	item[rowName][int(column)] = value;
 }
 
-protected function radiusText_changeHandler(event:TextOperationEvent):void
+protected function radiusText_changeHandler(event:FocusEvent):void
 {
 	var val:Number = Number(event.target.text);
-	if (isNaN(val)) {
-		Alert("Enter a valid number");
+	if (isNaN(val) || val <= 0) {
+		Alert.show("Enter a valid number");
 		return;
 	}
 	
 	sim.currentElement.radius = val;
 }
-protected function massText_changeHandler(event:TextOperationEvent):void
+protected function massText_changeHandler(event:FocusEvent):void
 {
 	var val:Number = Number(event.target.text);
-	if (isNaN(val)) {
-		Alert("Enter a valid number");
+	if (isNaN(val) || val <= 0) {
+		Alert.show("Enter a valid number");
 		return;
 	}
 	
 	sim.currentElement.mass = val;
+}
+protected function dimText_changeHandler(event:FocusEvent):void
+{
+	var val:int = int(event.target.text);
+	if (isNaN(val) || val <= 0) {
+		Alert.show("Enter a valid number");
+		return;
+	}
+	
+	sim.numDim = val;
+	// And the grid
 }

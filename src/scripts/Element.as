@@ -68,6 +68,19 @@ package scripts
 			parent.positionLine(acclLine, position, acceleration, 5);
 		}
 		
+		public function newDim(newVal:int):void {
+			var vector:String
+			for each (vector in ["position", "velocity", "acceleration"]) {
+				if (this[vector].length > newVal) {
+					this[vector].splice(newVal);
+				} else {
+					while (this[vector].length < newVal) {
+						this[vector].push(0);
+					}
+				}
+			}
+		}
+		
 		public function destroy():void {
 			try {
 				parent.canvas.removeElement(image);

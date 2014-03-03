@@ -46,17 +46,18 @@
 								dataProvider="{sim.objects}" labelField="id"
 								change="objListChange(event)"/>
 				<s:Button label="Remove" click="sim.removeElement(sim.currentElement)"/>
+				<s:Button label="Place" click="sim.placeObject = sim.currentElement; sim.placeObject.disabled = true;"/>
 				<s:DataGrid dataProvider="{sim.outputObject.elementVectors}" id="vectorTable" width="100%" editable="{!sim.outputObject.simulating}" gridItemEditorSessionStarting="preventEdit(event)"
-							requestedRowCount="3" columns="{sim.outputObject.getGridColumns()}" gridItemEditorSessionSave="objectEdit_saveHandler(event)">
+							requestedRowCount="3" columns="{sim.outputObject.colList}" gridItemEditorSessionSave="objectEdit_saveHandler(event)">
 				</s:DataGrid>
 				<s:HGroup>
 					<s:Label text="Radius:" />
-					<s:TextInput id="radiusTextInput" change="radiusText_changeHandler(event)" />
+					<s:TextInput id="radiusTextInput" focusOut="radiusText_changeHandler(event)" />
 					<s:Label text="m"/>
 				</s:HGroup>
 				<s:HGroup>
 					<s:Label text="Mass:" />
-					<s:TextInput id="massTextInput" change="massText_changeHandler(event)" />
+					<s:TextInput id="massTextInput" focusOut="massText_changeHandler(event)" />
 					<s:Label text="kg"/>
 				</s:HGroup>
 			</s:NavigatorContent>
@@ -66,6 +67,8 @@
 				<s:layout>
 					<s:VerticalLayout paddingTop="10"/>
 				</s:layout>
+				<s:Label text="Number of Dimensions:" />
+				<s:TextInput id="dimTextInput" text="{sim.numDim}" focusOut="dimText_changeHandler(event)" />
 				<s:Label width="100%" text="Simulation Speed"/>
 				<s:HSlider
 					id="speedSlider" focusEnabled="false"
