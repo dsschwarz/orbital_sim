@@ -83,7 +83,7 @@
 					minimum="0.1" maximum="10" value="1"
 					snapInterval="0.01" stepSize="0.05"
 					width="250" height="30"
-					change="sim.zoom=zoomSlider.value"/>
+					change="sim.setZoom(zoomSlider.value)"/>
 				<s:CheckBox change="sim.collisionsEnabled=event.target.selected" label="Collisions" selected="{sim.collisionsEnabled}"/>
 				<s:CheckBox id="stickyColl" change="sim.stickyCollisions=event.target.selected" label="Sticky Collisions" selected="{sim.stickyCollisions}" visible="{sim.collisionsEnabled}"/>
 				<s:HSlider

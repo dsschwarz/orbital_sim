@@ -68,7 +68,9 @@ package scripts
 			target.listen("timerStop", function():void{ simulating = false; });
 		};
 		private function handleMouseWheel(event:MouseEvent):void {
+			var mousePosition:MyVector = MyVector.create(target.numDim, [event.stageX -target.canvas.x, event.stageY - target.canvas.y]);
 			var scrollFactor:Number = event.delta > 0 ? 1.25 : 0.8;
+			target.pan.sub(mousePosition.mult( (1-scrollFactor)/target.zoom ), true); // FIXIT
 			target.setZoom(target.zoom * scrollFactor);
 		}
 		private function handleMouseDown(event:MouseEvent):void {
@@ -112,7 +114,7 @@ package scripts
 					// mouseDownEvent still points at original click
 					placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY]);
 				} else {
-					target.pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
+					target.pan.sub([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
 					mouseDownEvent = event;	// Reset to point at last position (allows pan)
 					if (!simulating) {
 						target.draw();
@@ -120,16 +122,6 @@ package scripts
 				}
 			}
 		};
-		private function handleKeyDown(event:KeyboardEvent):void {
-			if (event.keyCode == 32) {
-				trace("Spaaaaace")
-				if (simulating) {
-					target.stop();
-				} else {
-					target.start();
-				}
-			}
-		}
 		private function handleMouseUp(event:MouseEvent):void {
 			if (mouseDownEvent) {
 				if (placeObject) {
@@ -137,11 +129,21 @@ package scripts
 					placeObject.disabled = false;
 					placeObject = null;
 				} else {
-					target.pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
+					target.pan.sub([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
 				}
 				mouseDownEvent = null;
 				if (!simulating) {
 					target.draw();
+				}
+			}
+		}
+		private function handleKeyDown(event:KeyboardEvent):void {
+			if (event.keyCode == 32) {
+				trace("Spaaaaace")
+				if (simulating) {
+					target.stop();
+				} else {
+					target.start();
 				}
 			}
 		}

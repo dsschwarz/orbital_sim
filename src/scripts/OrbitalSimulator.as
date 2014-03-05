@@ -186,14 +186,14 @@ package scripts
 		}
 		// convert a position vector to an x and y location on screen
 		public function positionMember(member:Object, posVector:MyVector, radius:Number = 0):void {
-			var screenLocation:MyVector = posVector.sub(radius).mult(zoom).add(pan);
+			var screenLocation:MyVector = posVector.sub(radius).sub(pan).mult(zoom);
 			member.scaleX = zoom;
 			member.scaleY= zoom;
 			member.x = screenLocation[0];
 			member.y = screenLocation[1];
 		}
 		public function positionLine(line:Object, posVector:MyVector, directionVector:*, lineScaleFactor:Number=1):void {
-			var fromVector:MyVector = posVector.mult(zoom).add(pan);
+			var fromVector:MyVector = posVector.sub(pan).mult(zoom);
 			var toVector:MyVector = fromVector.add(directionVector.mult(lineScaleFactor*zoom));
 			line.xFrom = fromVector[0];
 			line.xTo = toVector[0];
@@ -203,6 +203,7 @@ package scripts
 		// Emits an event
 		public function setZoom(val:Number):void {
 			zoom = val;
+			draw();
 			eventDispatcher.dispatchEvent(new Event("updateZoom"));
 		}
 		
