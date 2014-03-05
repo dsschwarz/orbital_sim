@@ -38,6 +38,7 @@ package scripts
 		[Bindable]
 		public var objects:ArrayList = new ArrayList();
 		public var canvas:Group;
+		private var mainStage:Group;
 		private var _currentElement:Element;
 		public var placeObject:Element;
 		[Bindable]
@@ -61,9 +62,10 @@ package scripts
 			timer = new Timer(25);
 			timer.addEventListener(TimerEvent.TIMER, getTick(25));
 			
-			currentElement = this.addElement(0xF0aF50, [200, 100, 0, 0], [-20, -10, 0, 0]);
-			this.addElement(0x502FF0, [120, 200, 0, 0], [20, 10, 0, 0]);
+			currentElement = this.addElement(0xF0aF50, [300, 200], [-20, -10]);
+			this.addElement(0x502FF0, [220, 300], [20, 10]);
 			
+			this.mainStage = mainStage;
 			mainStage.addElement(canvas);
 			outputObject = new OutputObject();
 			outputObject.observe(this);
@@ -192,7 +194,7 @@ package scripts
 		}
 		public function positionLine(line:Object, posVector:MyVector, directionVector:*, lineScaleFactor:Number=1):void {
 			var fromVector:MyVector = posVector.mult(zoom).add(pan);
-			var toVector:MyVector = fromVector.add(directionVector.mult(lineScaleFactor));
+			var toVector:MyVector = fromVector.add(directionVector.mult(lineScaleFactor*zoom));
 			line.xFrom = fromVector[0];
 			line.xTo = toVector[0];
 			line.yFrom = fromVector[1];
@@ -316,8 +318,14 @@ package scripts
 //				objects[i].destroy();
 //			}
 			objects.removeAll();
+			outputObject.destroy();
 			canvas.removeAllElements();
-			timer.stop();
+			mainStage.removeElement(canvas);
+			eventDispatcher = null;
+			timer.reset();
+			timer = null;
+			canvas = null;
+			
 			
 		}
 	}

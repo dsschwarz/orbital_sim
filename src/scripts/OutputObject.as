@@ -47,86 +47,16 @@ package scripts
 			
 			// ZOOM and PAN
 			// zoom on scroll
-			target.canvas.parent.addEventListener(MouseEvent.MOUSE_WHEEL, function(event:MouseEvent):void {
-				var scrollFactor:Number = event.delta > 0 ? 1.25 : 0.8;
-				target.setZoom(target.zoom * scrollFactor);
-			});
+			target.canvas.parent.addEventListener(MouseEvent.MOUSE_WHEEL, handleMouseWheel);
 			
 			// MOUSE EVENTS
-			target.canvas.parent.addEventListener(MouseEvent.MOUSE_DOWN, function(event:MouseEvent):void {
-				var position:MyVector
-				mouseDownEvent = event;
-				if (placeObject) {
-					// object didn't get placed!!
-					placeObject.disabled = false; // we'll just add it on and forget it for now, add destructors later
-				}
-				if (target.placeObject) { // Place an existing object
-					// Place Object
-					position = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
-					position.sub(target.pan, true).div(target.zoom, true);
-					
-					placeObject = target.placeObject;
-					placeObject.disabled = true;
-					target.currentElement = placeObject;
-					target.placeObject = null;
-				} else if (event.ctrlKey) {
-					// Place Object
-					position = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
-					position.sub(target.pan, true).div(target.zoom, true);
-					
-					placeObject = target.addElement(target.placeColor, position);
-					placeObject.disabled = true;
-					target.currentElement = placeObject;
-				}
-			});
+			target.canvas.parent.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
 			
-			target.canvas.parent.addEventListener(MouseEvent.MOUSE_MOVE, function(event:MouseEvent):void {
-				if (target.placeObject) {
-					// Follows mouse
-					var position:MyVector = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
-					position.sub(target.pan, true).div(target.zoom, true);
-					target.placeObject.position = position;
-				}
-				if (mouseDownEvent) {
-					if (placeObject) {
-						// mouseDownEvent still points at original click
-						placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY]);
-					} else {
-						target.pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
-						mouseDownEvent = event;	// Reset to point at last position (allows pan)
-						if (!simulating) {
-							target.draw();
-						}
-					}
-				}
-			});
+			target.canvas.parent.addEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove);
 			
-			target.canvas.parentApplication.addEventListener(MouseEvent.MOUSE_UP, function(event:MouseEvent):void {
-				if (mouseDownEvent) {
-					if (placeObject) {
-						placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY]);
-						placeObject.disabled = false;
-						placeObject = null;
-					} else {
-						target.pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
-						if (!simulating) {
-							target.draw();
-						}
-					}
-					mouseDownEvent = null;
-				}
-			});
+			target.canvas.parentApplication.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
 			
-			FlexGlobals.topLevelApplication.addEventListener(KeyboardEvent.KEY_DOWN, function(event:KeyboardEvent):void {
-				if (event.keyCode == 32) {
-					trace("Spaaaaace")
-					if (simulating) {
-						target.stop();
-					} else {
-						target.start();
-					}
-				}
-			});
+			FlexGlobals.topLevelApplication.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
 			
 			target.listen("timeChanged", outputTime);
 			target.listen("speedChanged", outputSpeed);
@@ -137,6 +67,84 @@ package scripts
 			target.listen("timerStart", function():void{ simulating = true; });
 			target.listen("timerStop", function():void{ simulating = false; });
 		};
+		private function handleMouseWheel(event:MouseEvent):void {
+			var scrollFactor:Number = event.delta > 0 ? 1.25 : 0.8;
+			target.setZoom(target.zoom * scrollFactor);
+		}
+		private function handleMouseDown(event:MouseEvent):void {
+			var position:MyVector
+			mouseDownEvent = event;
+			if (placeObject) {
+				// object didn't get placed!!
+				placeObject.disabled = false; // we'll just add it on and forget it for now, add destructors later
+			}
+			if (target.placeObject) { // Place an existing object
+				// Place Object
+				position = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
+				position.sub(target.pan, true).div(target.zoom, true);
+				
+				placeObject = target.placeObject;
+				placeObject.disabled = true;
+				target.currentElement = placeObject;
+				target.placeObject = null;
+			} else if (event.ctrlKey) {
+				// Place Object
+				position = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
+				position.sub(target.pan, true).div(target.zoom, true);
+				
+				placeObject = target.addElement(target.placeColor, position);
+				placeObject.disabled = true;
+				target.currentElement = placeObject;
+			}
+		}
+		private function handleMouseMove(event:MouseEvent):void {
+			if (target.placeObject) {
+				// Follows mouse
+				var position:MyVector = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
+				position.sub(target.pan, true).div(target.zoom, true);
+				target.placeObject.position = position;
+				if (!simulating) {
+					target.draw();
+				}
+			}
+			if (mouseDownEvent) {
+				if (placeObject) {
+					// mouseDownEvent still points at original click
+					placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY]);
+				} else {
+					target.pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
+					mouseDownEvent = event;	// Reset to point at last position (allows pan)
+					if (!simulating) {
+						target.draw();
+					}
+				}
+			}
+		};
+		private function handleKeyDown(event:KeyboardEvent):void {
+			if (event.keyCode == 32) {
+				trace("Spaaaaace")
+				if (simulating) {
+					target.stop();
+				} else {
+					target.start();
+				}
+			}
+		}
+		private function handleMouseUp(event:MouseEvent):void {
+			if (mouseDownEvent) {
+				if (placeObject) {
+					placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY]);
+					placeObject.disabled = false;
+					placeObject = null;
+				} else {
+					target.pan.add([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
+				}
+				mouseDownEvent = null;
+				if (!simulating) {
+					target.draw();
+				}
+			}
+		}
 		private function outputCurrElement(event:Event=null):void {
 			setElementVectors(event);
 			if (target.currentElement) {
@@ -165,9 +173,10 @@ package scripts
 					acclr[i] = target.currentElement.acceleration[i].toFixed(2);
 				}
 			}
-			elementVectors.setItemAt(pos, 0);
-			elementVectors.setItemAt(vel, 1);
-			elementVectors.setItemAt(acclr, 2);
+			elementVectors.removeAll();
+			elementVectors.addItem(pos);
+			elementVectors.addItem(vel);
+			elementVectors.addItem(acclr);
 		};
 		// TIME
 		private function outputTime(event:Event=null):void 
@@ -178,13 +187,15 @@ package scripts
 		{
 			colList.removeAll();
 			for (var i:int = 0; i < target.numDim; i++) {
-				var col:GridColumn = new GridColumn("Axis" + (i + 1));
+				var col:GridColumn = new GridColumn(String(i + 1));
 				col.dataField = String(i);
+				col.sortable = false;
 				colList.addItem(col);
 			}
 			var labelCol:GridColumn = new GridColumn();
 			labelCol.dataField = "name";
-			labelCol.headerText = "";
+			labelCol.headerText = "Axis: ";
+			labelCol.sortable = false;
 			colList.addItemAt(labelCol, 0);
 			return colList;
 		}
@@ -193,6 +204,16 @@ package scripts
 		private function outputSpeed(event:Event=null):void 
 		{
 			speed = String(target.simulationSpeed.toFixed(2));
+		}
+		public function destroy():void {
+			target.canvas.parent.removeEventListener(MouseEvent.MOUSE_WHEEL, handleMouseWheel);
+			
+			target.canvas.parent.removeEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
+			
+			target.canvas.parent.removeEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove);
+			
+			target.canvas.parentApplication.removeEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
+			FlexGlobals.topLevelApplication.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
 		}
 	}
 }

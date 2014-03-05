@@ -15,9 +15,9 @@ package scripts
 		public var velocity:MyVector;
 		public var acceleration:MyVector;
 		[Bindable]
-		public var mass:Number = 1;
+		public var mass:Number = 10;
 		[Bindable]
-		public var radius:Number = 50;
+		public var radius:Number = 10;
 		public var image:Ellipse;
 		public var velLine:Line;
 		public var acclLine:Line;
@@ -64,8 +64,8 @@ package scripts
 			parent.positionMember(image, position, radius);
 			// Direction Vectors
 			// TODO get line lengths and weight that range between specific values
-			parent.positionLine(velLine, position, velocity, 5);
-			parent.positionLine(acclLine, position, acceleration, 5);
+			parent.positionLine(velLine, position, velocity);
+			parent.positionLine(acclLine, position, acceleration);
 		}
 		
 		public function newDim(newVal:int):void {
