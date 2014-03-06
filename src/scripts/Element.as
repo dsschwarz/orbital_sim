@@ -15,7 +15,7 @@ package scripts
 		public var velocity:MyVector;
 		public var acceleration:MyVector;
 		[Bindable]
-		public var mass:Number = 10;
+		public var mass:Number = 7.5E14 ;
 		[Bindable]
 		public var radius:Number = 10;
 		public var image:Ellipse;

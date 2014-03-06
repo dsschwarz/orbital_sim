@@ -21,7 +21,7 @@ package scripts
 	
 	public class OrbitalSimulator
 	{
-		public var G:Number = 10000;
+		public var G:Number = 6.67384E-11;
 		private var _numDim:int = 4;
 		public static var updateFrequency:int = 300;
 		public var updateTimer:int = 0;
@@ -62,8 +62,8 @@ package scripts
 			timer = new Timer(25);
 			timer.addEventListener(TimerEvent.TIMER, getTick(25));
 			
-			currentElement = this.addElement(0xF0aF50, [300, 200], [-20, -10]);
-			this.addElement(0x502FF0, [220, 300], [20, 10]);
+			currentElement = this.addElement(0xF0aF50, [300, 200], [-14, 0]);
+			this.addElement(0x502FF0, [300, 300], [14, 0]);
 			
 			this.mainStage = mainStage;
 			mainStage.addElement(canvas);

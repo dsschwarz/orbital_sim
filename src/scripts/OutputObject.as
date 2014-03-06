@@ -68,6 +68,7 @@ package scripts
 			target.listen("timerStop", function():void{ simulating = false; });
 		};
 		private function handleMouseWheel(event:MouseEvent):void {
+			event.preventDefault();
 			var mousePosition:MyVector = MyVector.create(target.numDim, [event.stageX -target.canvas.x, event.stageY - target.canvas.y]);
 			var scrollFactor:Number = event.delta > 0 ? 1.25 : 0.8;
 			target.pan.sub(mousePosition.mult( (1-scrollFactor)/target.zoom ), true); // FIXIT
@@ -83,7 +84,7 @@ package scripts
 			if (target.placeObject) { // Place an existing object
 				// Place Object
 				position = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
-				position.sub(target.pan, true).div(target.zoom, true);
+				position.div(target.zoom, true).add(target.pan, true);
 				
 				placeObject = target.placeObject;
 				placeObject.disabled = true;
@@ -92,7 +93,7 @@ package scripts
 			} else if (event.ctrlKey) {
 				// Place Object
 				position = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
-				position.sub(target.pan, true).div(target.zoom, true);
+				position.div(target.zoom, true).add(target.pan, true);
 				
 				placeObject = target.addElement(target.placeColor, position);
 				placeObject.disabled = true;
@@ -109,12 +110,15 @@ package scripts
 					target.draw();
 				}
 			}
+			// Mouse was clicked and has not been released
 			if (mouseDownEvent) {
+				// If currently placing object
 				if (placeObject) {
 					// mouseDownEvent still points at original click
-					placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY]);
+					placeObject.velocity = MyVector.create(target.numDim, [(event.stageX - mouseDownEvent.stageX)/target.zoom, (event.stageY - mouseDownEvent.stageY)/target.zoom]);
 				} else {
-					target.pan.sub([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
+					// Panning
+					target.pan.sub([(event.stageX - mouseDownEvent.stageX)/target.zoom, (event.stageY - mouseDownEvent.stageY)/target.zoom], true);
 					mouseDownEvent = event;	// Reset to point at last position (allows pan)
 					if (!simulating) {
 						target.draw();
@@ -124,12 +128,13 @@ package scripts
 		};
 		private function handleMouseUp(event:MouseEvent):void {
 			if (mouseDownEvent) {
+				// Place the object, and enable it
 				if (placeObject) {
-					placeObject.velocity = MyVector.create(target.numDim, [event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY]);
+					placeObject.velocity = MyVector.create(target.numDim, [(event.stageX - mouseDownEvent.stageX)/target.zoom, (event.stageY - mouseDownEvent.stageY)/target.zoom]);
 					placeObject.disabled = false;
 					placeObject = null;
 				} else {
-					target.pan.sub([event.stageX - mouseDownEvent.stageX, event.stageY - mouseDownEvent.stageY], true);
+					target.pan.sub([(event.stageX - mouseDownEvent.stageX)/target.zoom, (event.stageY - mouseDownEvent.stageY)/target.zoom], true);
 				}
 				mouseDownEvent = null;
 				if (!simulating) {

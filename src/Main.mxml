@@ -2,7 +2,7 @@
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
 			   creationComplete="init()"
-			   width="1000" height="600"
+			   width="1000" height="630"
 			   preloader="mx.preloaders.DownloadProgressBar"
 			   xmlns:mx="library://ns.adobe.com/flex/mx">
 	
@@ -86,12 +86,14 @@
 					change="sim.setZoom(zoomSlider.value)"/>
 				<s:CheckBox change="sim.collisionsEnabled=event.target.selected" label="Collisions" selected="{sim.collisionsEnabled}"/>
 				<s:CheckBox id="stickyColl" change="sim.stickyCollisions=event.target.selected" label="Sticky Collisions" selected="{sim.stickyCollisions}" visible="{sim.collisionsEnabled}"/>
+				<s:Label width="100%" paddingTop="10" text="Kinetic Energy Conserved" visible="{sim.collisionsEnabled &amp;&amp; !sim.stickyCollisions}"/>
 				<s:HSlider
 					id="elasticitySlider" focusEnabled="false"
 					visible="{sim.collisionsEnabled &amp;&amp; !sim.stickyCollisions}"
 					minimum="0" maximum="1" value="1"
 					snapInterval="0.01" stepSize="0.05"
 					width="250" height="30"
+					dataTipFormatFunction="MyUtils.toPercent"
 					change="sim.eRatio=elasticitySlider.value"/>
 			</s:NavigatorContent>
 		</mx:TabNavigator>

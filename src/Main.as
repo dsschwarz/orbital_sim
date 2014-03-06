@@ -19,6 +19,19 @@ import spark.events.TextOperationEvent;
 [Bindable]
 public var sim:OrbitalSimulator;
 
+/**
+ * STRUCTURE
+ * All code directly bound to the UI is in Main.as
+ * The orbital simulator holds the elements (planets, etc), and is a self contained simulator
+ * 	It contains a single Bindable output object, which the UI can bind to
+ * 	The elements are each updated once per loop. Elements update and draw themselves
+ * 
+ * The MyVector class is GORGEOUS
+ * It creates arrays with additional functionality for interacting with other arrays/operating on itself
+ * They can be added, subtracted, multiplied, divided, normalized, and converted to a single scalar length.
+ * They're used extensively throughout this project
+ * 
+ */
 public function init():void 
 {
 	trace("Initializing");
