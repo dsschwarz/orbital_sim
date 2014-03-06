@@ -104,7 +104,7 @@ package scripts
 			if (target.placeObject) {
 				// Follows mouse
 				var position:MyVector = MyVector.create(target.numDim, [event.stageX - target.canvas.x, event.stageY - target.canvas.y]);
-				position.sub(target.pan, true).div(target.zoom, true);
+				position.div(target.zoom, true).add(target.pan, true);
 				target.placeObject.position = position;
 				if (!simulating) {
 					target.draw();

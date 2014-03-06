@@ -53,6 +53,7 @@ package scripts
 		
 		public function OrbitalSimulator(mainStage:Group)
 		{
+			
 			canvas = new Group();
 //			canvas.autoLayout = false;
 			

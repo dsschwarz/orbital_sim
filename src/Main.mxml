@@ -24,14 +24,14 @@
 				<s:Button label="Play" click="sim.start()" focusEnabled="false"/>
 				<s:Button label="Pause" click="sim.stop()" focusEnabled="false"/>
 				<s:Button label="Stop" click="sim.stop(), sim.resetTime()" focusEnabled="false"/>
-				<s:Button right="0" label="Reset Screen" click="sim.setZoom(1); sim.pan.mult(0, true)" focusEnabled="false"/>
+				<s:Button right="0" width="100" label="Reset Screen" click="sim.setZoom(1); sim.pan.mult(0, true)" focusEnabled="false"/>
 				<s:Label text="Time Elapsed: {sim.outputObject.time}" focusEnabled="false"/>
 			</s:HGroup>
 			<s:HGroup>
 				<s:Button label="Slower" click="changeSpeedByStep(false, 5)" focusEnabled="false"/>
 				<s:Button label="Faster" click="changeSpeedByStep(true, 5)" focusEnabled="false"/>
 				<s:Button label="Reverse" click="sim.reverseTime()" focusEnabled="false"/>
-				<s:Button right="0" label="Reset Sim" click="resetSim()" focusEnabled="false"/>
+				<s:Button right="0" width="100" label="Reset Sim" click="resetSim()" focusEnabled="false"/>
 				<s:Label text="Sim Speed: x{sim.outputObject.speed}" focusEnabled="false"/>
 			</s:HGroup>
 		</s:VGroup>
