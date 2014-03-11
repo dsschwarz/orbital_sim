@@ -107,6 +107,15 @@ package scripts
 			});
 			return Math.sqrt(length);
 		}
+		
+		public function sum():Number
+		{
+			var sum:Number = 0;
+			this.forEach(function(el:*, index:int, array:*):void {
+				sum += el;
+			});
+			return sum;
+		}
 		// Add cross product (mult is dot product)override flash_proxy function setProperty(name:*, value:*):void {
 		
 		

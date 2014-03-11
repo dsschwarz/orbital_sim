@@ -123,8 +123,8 @@ package scripts
 						var uDist:MyVector = distance.normalize(); // Unit vector from obj 1 to 2
 						var finalDist:MyVector = uDist.mult(obj1.radius + obj2.radius); // distance so that objects are touching
 						
-						var u1:MyVector = obj1.velocity.mult(uDist); // Dot product to get velocity before collision in direction towards other sphere
-						var u2:MyVector = obj2.velocity.mult(uDist);
+						var u1:MyVector = uDist.mult(obj1.velocity.mult(uDist).sum()); // Dot product to get velocity before collision in direction towards other sphere
+						var u2:MyVector = uDist.mult(obj2.velocity.mult(uDist).sum());
 						
 						var v1:MyVector;
 						var v2:MyVector;
@@ -141,8 +141,8 @@ package scripts
 							v2 = u1.sub(u2).mult(m1 * energyRatio).add(u1.mult(m1)).add(u2.mult(m2)).div(m1+m2);
 						}
 						// Adjust obj1's total post collision velocity
-						obj1.velocity.add(v1.sub(u1).mult(uDist), true);
-						obj2.velocity.add(v2.sub(u2).mult(uDist), true);
+						obj1.velocity.add(v1.sub(u1), true);
+						obj2.velocity.add(v2.sub(u2), true);
 						
 						// Adjust position so objects are touching
 						obj1.position.sub(finalDist.sub(distance).div(2), true);
